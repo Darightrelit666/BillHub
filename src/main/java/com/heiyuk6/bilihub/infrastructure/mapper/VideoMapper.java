@@ -1,6 +1,6 @@
 package com.heiyuk6.bilihub.infrastructure.mapper;
 
-import com.heiyuk6.bilihub.domain.video.model.Video;
+import com.heiyuk6.bilihub.domain.video.entity.Video;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;

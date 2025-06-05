@@ -1,4 +1,4 @@
-package com.heiyuk6.bilihub.domain.video.model;
+package com.heiyuk6.bilihub.domain.video.entity;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

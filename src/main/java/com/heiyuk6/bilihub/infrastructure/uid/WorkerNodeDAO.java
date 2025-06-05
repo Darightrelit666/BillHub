@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baidu.fsg.uid.worker.dao;
+package com.heiyuk6.bilihub.infrastructure.uid;
 
-import com.baidu.fsg.uid.worker.entity.WorkerNodeEntity;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.springframework.stereotype.Repository;
 
 /**
  * DAO for M_WORKER_NODE
  *
  * @author yutianbao
  */
-@Repository
+@Mapper
 public interface WorkerNodeDAO {
 
     /**

@@ -1,6 +1,6 @@
 package com.heiyuk6.bilihub.domain.danmu.repository;
 
-import com.heiyuk6.bilihub.domain.danmu.model.Danmu;
+import com.heiyuk6.bilihub.domain.danmu.entity.Danmu;
 
 import java.util.List;
 

@@ -71,6 +71,12 @@
             <version>${tianai.captcha.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.baidu.fsg</groupId>
+            <artifactId>uid-generator</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+
         <!-- ====== Spring Security Crypto（用于 BCryptPasswordEncoder 等） ====== -->
         <dependency>
             <groupId>org.springframework.security</groupId>

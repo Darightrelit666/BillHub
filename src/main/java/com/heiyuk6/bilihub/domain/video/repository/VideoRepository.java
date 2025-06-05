@@ -1,6 +1,6 @@
 package com.heiyuk6.bilihub.domain.video.repository;
 
-import com.heiyuk6.bilihub.domain.video.model.Video;
+import com.heiyuk6.bilihub.domain.video.entity.Video;
 
 import java.util.List;
 import java.util.Optional;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baidu.fsg.uid.worker;
+package com.heiyuk6.bilihub.infrastructure.uid;
 
 import com.baidu.fsg.uid.utils.ValuedEnum;
 

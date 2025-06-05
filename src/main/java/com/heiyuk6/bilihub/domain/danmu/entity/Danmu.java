@@ -1,4 +1,4 @@
-package com.heiyuk6.bilihub.domain.danmu.model;
+package com.heiyuk6.bilihub.domain.danmu.entity;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

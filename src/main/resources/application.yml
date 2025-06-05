@@ -50,3 +50,15 @@ tianai:
     #   colorTo: "#FFFFFF"
     # text:
     #   charLength: 5
+
+uid:
+  workerId: 1
+  biz-type: user
+  segment:
+    alloc: cached-segment
+    step: 1000
+    threshold: 20
+
+
+mybatis:
+  mapper-locations: classpath:/mapper/*.xml

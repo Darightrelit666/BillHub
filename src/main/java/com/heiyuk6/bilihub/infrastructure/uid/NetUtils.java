@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.heiyuk6.bilihub.infrastructure.uid.utils;
+package com.heiyuk6.bilihub.infrastructure.uid;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;

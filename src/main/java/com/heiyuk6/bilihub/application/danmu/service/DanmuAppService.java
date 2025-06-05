@@ -3,8 +3,7 @@ package com.heiyuk6.bilihub.application.danmu.service;
 import com.heiyuk6.bilihub.application.danmu.assembler.DanmuAssembler;
 import com.heiyuk6.bilihub.application.danmu.dto.DanmuResponseDTO;
 import com.heiyuk6.bilihub.application.danmu.dto.DanmuSendDTO;
-import com.heiyuk6.bilihub.domain.danmu.exception.DanmuDomainException;
-import com.heiyuk6.bilihub.domain.danmu.model.Danmu;
+import com.heiyuk6.bilihub.domain.danmu.entity.Danmu;
 import com.heiyuk6.bilihub.domain.danmu.repository.DanmuRepository;
 import org.springframework.stereotype.Service;
 

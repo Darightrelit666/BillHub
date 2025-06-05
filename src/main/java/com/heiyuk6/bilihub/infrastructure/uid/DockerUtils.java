@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.heiyuk6.bilihub.infrastructure.uid.utils;
+package com.heiyuk6.bilihub.infrastructure.uid;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;

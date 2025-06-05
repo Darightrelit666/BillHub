@@ -2,7 +2,7 @@ package com.heiyuk6.bilihub.application.video.assembler;
 
 import com.heiyuk6.bilihub.application.video.dto.VideoUploadDTO;
 import com.heiyuk6.bilihub.application.video.dto.VideoResponseDTO;
-import com.heiyuk6.bilihub.domain.video.model.Video;
+import com.heiyuk6.bilihub.domain.video.entity.Video;
 
 public class VideoAssembler {
 

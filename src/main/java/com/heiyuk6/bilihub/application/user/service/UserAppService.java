@@ -1,5 +1,6 @@
 package com.heiyuk6.bilihub.application.user.service;
 
+import com.baidu.fsg.uid.UidGenerator;
 import com.heiyuk6.bilihub.application.user.assembler.UserAssembler;
 import com.heiyuk6.bilihub.application.user.dto.*;
 import com.heiyuk6.bilihub.domain.user.exception.UserDomainException;
@@ -17,6 +18,7 @@ import java.util.UUID;
 public class UserAppService {
     private final UserRepository userRepository;
     private final UserAssembler userAssembler;
+    private final UidGenerator uidGenerator;
 
     // BCrypt 加密器；可考虑提到配置里单例注入
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -33,14 +35,15 @@ public class UserAppService {
 
         // 2. 对明文密码做 BCrypt 加密
         String hashed = passwordEncoder.encode(dto.getPassword());
+        // 3. 生成全局唯一 ID
+        long newId = uidGenerator.getUID();
+        // 4. 创建领域对象
+        User newUser = User.register(newId,dto.getUsername(), hashed, dto.getEmail());
 
-        // 3. 创建领域对象
-        User newUser = User.register(dto.getUsername(), hashed, dto.getEmail());
-
-        // 4. 持久化
+        // 5. 持久化
         User saved = userRepository.save(newUser);
 
-        // 5. 转换为 DTO 返回
+        // 6. 转换为 DTO 返回
         return userAssembler.toResponseDTO(saved);
     }
 

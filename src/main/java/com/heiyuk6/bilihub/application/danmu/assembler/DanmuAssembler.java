@@ -2,7 +2,7 @@ package com.heiyuk6.bilihub.application.danmu.assembler;
 
 import com.heiyuk6.bilihub.application.danmu.dto.DanmuResponseDTO;
 import com.heiyuk6.bilihub.application.danmu.dto.DanmuSendDTO;
-import com.heiyuk6.bilihub.domain.danmu.model.Danmu;
+import com.heiyuk6.bilihub.domain.danmu.entity.Danmu;
 
 public class DanmuAssembler {
 

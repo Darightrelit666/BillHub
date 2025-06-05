@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.baidu.fsg.uid.worker.entity;
+package com.heiyuk6.bilihub.infrastructure.uid;
 
 import java.util.Date;
 

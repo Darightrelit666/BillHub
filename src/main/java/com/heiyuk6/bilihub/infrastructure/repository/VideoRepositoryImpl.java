@@ -1,6 +1,6 @@
 package com.heiyuk6.bilihub.infrastructure.repository;
 
-import com.heiyuk6.bilihub.domain.video.model.Video;
+import com.heiyuk6.bilihub.domain.video.entity.Video;
 import com.heiyuk6.bilihub.domain.video.repository.VideoRepository;
 import com.heiyuk6.bilihub.domain.video.exception.VideoDomainException;
 import com.heiyuk6.bilihub.infrastructure.mapper.VideoMapper;

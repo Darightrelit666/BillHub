@@ -1,6 +1,6 @@
 package com.heiyuk6.bilihub.infrastructure.mapper;
 
-import com.heiyuk6.bilihub.domain.danmu.model.Danmu;
+import com.heiyuk6.bilihub.domain.danmu.entity.Danmu;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;

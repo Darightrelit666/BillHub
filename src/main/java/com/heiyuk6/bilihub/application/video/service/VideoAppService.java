@@ -1,15 +1,15 @@
 package com.heiyuk6.bilihub.application.video.service;
 
+import com.baidu.fsg.uid.UidGenerator;
 import com.heiyuk6.bilihub.application.video.assembler.VideoAssembler;
 import com.heiyuk6.bilihub.application.video.dto.VideoResponseDTO;
 import com.heiyuk6.bilihub.application.video.dto.VideoUploadDTO;
 import com.heiyuk6.bilihub.domain.video.exception.VideoDomainException;
-import com.heiyuk6.bilihub.domain.video.model.Video;
+import com.heiyuk6.bilihub.domain.video.entity.Video;
 import com.heiyuk6.bilihub.domain.video.repository.VideoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -19,8 +19,10 @@ import java.util.stream.Collectors;
 public class VideoAppService {
 
     private final VideoRepository videoRepository;
+    private final UidGenerator uidGenerator;
 
-    public VideoAppService(VideoRepository videoRepository) {
+    public VideoAppService(UidGenerator uidGenerator,VideoRepository videoRepository) {
+        this.uidGenerator= uidGenerator;
         this.videoRepository = videoRepository;
     }
 
@@ -28,8 +30,39 @@ public class VideoAppService {
      * 上传视频
      */
     public VideoResponseDTO uploadVideo(VideoUploadDTO dto) {
-        Video video = VideoAssembler.toDomain(dto);
-        Video saved = videoRepository.save(video);
+        // 1. 先从 UidGenerator 拿到一个全局唯一的 long
+        Long newId = uidGenerator.getUID();
+
+        // 2. 用 newId + 其它上传信息创建领域模型，注意这里手动给 id 赋值
+        Video video = Video.newInstance(
+                dto.getUploaderId(),
+                dto.getTitle(),
+                dto.getDescription(),
+                dto.getStoragePath(),
+                dto.getThumbnailPath(),
+                dto.getDuration(),
+                dto.getSize()
+        );
+        video.setId(newId);   // 注意：你的领域类里有 setId(Long id) 方法
+
+        // 3. 把领域模型转换成持久化实体（VideoEntity），再保存
+        Video entity = new Video(
+                video.getId(),
+                video.getUploaderId(),
+                video.getTitle(),
+                video.getDescription(),
+                video.getStoragePath(),
+                video.getThumbnailPath(),
+                video.getDuration(),
+                video.getSize(),
+                video.getStatus(),
+                video.getViewCount(),
+                video.getCreatedAt(),
+                video.getUpdatedAt()
+        );
+        Video saved = videoRepository.save(entity);
+
+        // 4. 把持久化后（或者直接用领域模型）映射为 ResponseDTO 并返回
         return VideoAssembler.toResponseDTO(saved);
     }
 

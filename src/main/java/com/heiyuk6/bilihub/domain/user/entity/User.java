@@ -25,7 +25,7 @@ public class User {
     /**
      * 用户注册的静态工厂方法
      */
-    public static User register(String username, String passwordHash, String email) {
+    public static User register(Long Id,String username, String passwordHash, String email) {
         if (username == null || username.isEmpty()) {
             throw new UserDomainException("用户名不能为空");
         }
@@ -33,6 +33,7 @@ public class User {
             throw new UserDomainException("密码不能为空");
         }
         User u = new User();
+        u.id = Id;
         u.username = username;
         u.passwordHash = passwordHash;
         u.email = email;

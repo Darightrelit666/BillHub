@@ -1,6 +1,6 @@
 package com.heiyuk6.bilihub.infrastructure.repository;
 
-import com.heiyuk6.bilihub.domain.danmu.model.Danmu;
+import com.heiyuk6.bilihub.domain.danmu.entity.Danmu;
 import com.heiyuk6.bilihub.domain.danmu.repository.DanmuRepository;
 import com.heiyuk6.bilihub.domain.danmu.exception.DanmuDomainException;
 import com.heiyuk6.bilihub.infrastructure.mapper.DanmuMapper;
