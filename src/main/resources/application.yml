@@ -20,3 +20,33 @@ spring:
 #   mapper-locations: classpath:mapper/*.xml
 
 # Spring Security、其他模块配置可按需补充
+
+  redis:
+    host: localhost
+    port: 6379
+    # 如果你的 Redis 配置了密码，就在这里加上：
+    password: 123456
+    lettuce:
+      pool:
+        max-active: 10
+        max-idle: 5
+        min-idle: 1
+
+tianai:
+  captcha:
+    enabled: true
+    type: SLIDER            # 可选：SLIDER / CLICK_WORDS / ARITHMETIC / TEXT
+    storage:
+      type: REDIS           # 存储类型，这里使用 Redis
+    redis:
+      prefix: "tiancap:"     # Redis 中的 key 前缀
+      expire: 300           # 单位：秒
+    width: 160              # 验证码图片宽度
+    height: 60              # 验证码图片高度
+    fontSize: 40            # 文字大小
+    # 下面是可选项，如果想自定义背景图、文字颜色、干扰线等可以写在这里
+    # background:
+    #   colorFrom: "#FFFFFF"
+    #   colorTo: "#FFFFFF"
+    # text:
+    #   charLength: 5

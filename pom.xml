@@ -28,6 +28,8 @@
         <mybatis.spring.boot.version>2.2.2</mybatis.spring.boot.version>
         <!-- MySQL 驱动版本 -->
         <mysql.connector.version>8.0.33</mysql.connector.version>
+
+        <tianai.captcha.version>1.5.2</tianai.captcha.version>
     </properties>
 
     <dependencies>
@@ -42,6 +44,25 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
+        <!-- Tianai-Captcha Spring Boot Starter -->
+        <dependency>
+            <groupId>cloud.tianai.captcha</groupId>
+            <artifactId>tianai-captcha-springboot-starter</artifactId>
+            <version>${tianai.captcha.version}</version>
+        </dependency>
+
+        <!-- Spring Data Redis（若已有可省略） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- Jackson（如需手动序列化） -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
         <!-- MySQL 驱动 -->
         <dependency>
             <groupId>mysql</groupId>
@@ -92,6 +113,11 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
             <version>6.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
+            <version>3.3.0</version>
         </dependency>
     </dependencies>
 
