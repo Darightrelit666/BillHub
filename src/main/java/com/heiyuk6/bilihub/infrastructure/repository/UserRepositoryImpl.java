@@ -1,4 +1,4 @@
-package com.heiyuk6.bilihub.infrastructure.repository.user;
+package com.heiyuk6.bilihub.infrastructure.repository;
 
 import com.heiyuk6.bilihub.domain.user.entity.User;
 import com.heiyuk6.bilihub.domain.user.repository.UserRepository;

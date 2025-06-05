@@ -1,69 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.heiyuk6</groupId>
-    <artifactId>bilihub</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>BiliHub</name>
-    <description>仿 B 站项目后端</description>
-    <packaging>jar</packaging>
-
-    <!-- 继承 Spring Boot 父 POM，自动管理大多数依赖版本 -->
+    <!-- 1. 继承 Spring Boot 父级 POM，自动管理依赖版本 -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.7.14</version>
-        <relativePath/>
+        <relativePath/> <!-- 不使用本地父 POM，而去中央仓库下载 -->
     </parent>
+
+    <groupId>com.heiyuk6</groupId>
+    <artifactId>bilihub</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>BiliHub</name>
+    <description>仿 B 站项目后端</description>
 
     <properties>
         <!-- 全局 Java 版本设为 17，与 Spring Boot 2.7.x 完全兼容 -->
         <java.version>17</java.version>
-        <!-- Lombok 版本 -->
-        <lombok.version>1.18.30</lombok.version>
-        <!-- MyBatis Spring Boot Starter 版本 -->
+        <!-- Tianai-Captcha 版本 -->
+        <tianai.captcha.version>1.5.2</tianai.captcha.version>
+        <!-- MyBatis Starter 版本，如果需要手写 SQL -->
         <mybatis.spring.boot.version>2.2.2</mybatis.spring.boot.version>
         <!-- MySQL 驱动版本 -->
         <mysql.connector.version>8.0.33</mysql.connector.version>
-
-        <tianai.captcha.version>1.5.2</tianai.captcha.version>
+        <!-- Lombok 版本 -->
+        <lombok.version>1.18.30</lombok.version>
     </properties>
 
     <dependencies>
-        <!-- Spring MVC + 嵌入式 Tomcat + Jackson -->
+        <!-- ====== 基础 Web + JPA ====== -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
-        <!-- Spring Data JPA + Hibernate -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-        <!-- Tianai-Captcha Spring Boot Starter -->
-        <dependency>
-            <groupId>cloud.tianai.captcha</groupId>
-            <artifactId>tianai-captcha-springboot-starter</artifactId>
-            <version>${tianai.captcha.version}</version>
-        </dependency>
-
-        <!-- Spring Data Redis（若已有可省略） -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
-
-        <!-- Jackson（如需手动序列化） -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-
-        <!-- MySQL 驱动 -->
+        <!-- MySQL 驱动，用于 JPA 和 MyBatis 连接 MySQL -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
@@ -71,20 +51,45 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- MyBatis Spring Boot Starter（用于手写 SQL） -->
+        <!-- ====== MyBatis（可选） ====== -->
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
             <version>${mybatis.spring.boot.version}</version>
         </dependency>
 
-        <!-- Spring Security Crypto（包含 BCryptPasswordEncoder） -->
+        <!-- ====== Redis Starter：自动带 Lettuce 客户端 ====== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- ====== Tianai-Captcha Spring Boot Starter ====== -->
+        <dependency>
+            <groupId>cloud.tianai.captcha</groupId>
+            <artifactId>tianai-captcha-springboot-starter</artifactId>
+            <version>${tianai.captcha.version}</version>
+        </dependency>
+
+        <!-- ====== Spring Security Crypto（用于 BCryptPasswordEncoder 等） ====== -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
-        <!-- Lombok（编译时注解处理，运行时不打入 JAR） -->
+        <!-- ====== WebSocket（后面做弹幕/IM 聊天时会用到） ====== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <!-- ====== Hibernate Validator（JSR-380） ====== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- ====== Lombok ====== -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -97,36 +102,11 @@
             <artifactId>springdoc-openapi-ui</artifactId>
             <version>1.6.15</version>
         </dependency>
-
-        <!-- WebSocket（用于实时弹幕/聊天） -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-websocket</artifactId>
-        </dependency>
-
-        <!-- Validation（Hibernate Validator 实现 JSR-380） -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-core</artifactId>
-            <version>6.3.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-redis</artifactId>
-            <version>3.3.0</version>
-        </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <!--
-              让 Spring Boot 父 POM 自动配置编译器。
-              source/target 会使用 <java.version>17</java.version>
-            -->
+            <!-- Spring Boot 打包插件 -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

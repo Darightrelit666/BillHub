@@ -23,7 +23,7 @@ spring:
 
   redis:
     host: localhost
-    port: 6379
+    port: 6380
     # 如果你的 Redis 配置了密码，就在这里加上：
     password: 123456
     lettuce:

@@ -1,4 +1,4 @@
-package com.heiyuk6.bilihub.infrastructure.repository.user;
+package com.heiyuk6.bilihub.infrastructure.repository;
 
 import com.heiyuk6.bilihub.infrastructure.po.user.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
