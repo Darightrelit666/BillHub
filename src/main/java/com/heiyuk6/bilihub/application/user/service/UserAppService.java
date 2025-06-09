@@ -23,6 +23,7 @@ public class UserAppService {
     // BCrypt 加密器；可考虑提到配置里单例注入
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+
     /**
      * 用户注册
      */
