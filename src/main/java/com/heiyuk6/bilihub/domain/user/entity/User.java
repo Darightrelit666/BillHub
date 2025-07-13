@@ -55,6 +55,21 @@ public class User {
     }
 
     /**
+     * 修改昵称和邮箱
+     */
+    public void changeBasicInfo(String username, String email) {
+        if (username == null || username.isEmpty()) {
+            throw new UserDomainException("用户名不能为空");
+        }
+        if (email != null && !email.isEmpty() && !email.contains("@")) {
+            throw new UserDomainException("邮箱格式不正确");
+        }
+        this.username = username;
+        this.email = email;
+        this.updateTime = LocalDateTime.now();
+    }
+
+    /**
      * 修改头像 URL
      */
     public void changeAvatar(String avatarUrl) {

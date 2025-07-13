@@ -4,6 +4,9 @@ import com.heiyuk6.bilihub.domain.user.entity.User;
 import com.heiyuk6.bilihub.domain.user.repository.UserRepository;
 import com.heiyuk6.bilihub.infrastructure.po.user.UserEntity;
 import lombok.RequiredArgsConstructor;
+import lombok.var;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -15,26 +18,14 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 public class UserRepositoryImpl implements UserRepository {
+
     private final UserJpaRepository jpaRepo;
 
     @Override
-    public User save(User user) {
-        // 领域对象 → JPA 实体
-        UserEntity entity = new UserEntity();
-        entity.setId(user.getId());
-        entity.setUsername(user.getUsername());
-        entity.setPasswordHash(user.getPasswordHash());
-        entity.setEmail(user.getEmail());
-        entity.setRole(user.getRole());
-        entity.setAvatarUrl(user.getAvatarUrl());
-        entity.setCreateTime(user.getCreateTime());
-        entity.setUpdateTime(user.getUpdateTime());
-
-        // 保存到数据库
-        UserEntity saved = jpaRepo.save(entity);
-
-        // JPA 实体 → 领域对象
-        return toDomain(saved);
+    public Optional<User> findByUsername(String username) {
+        // jpaRepo.findByUsername 返回 UserEntity 或 null
+        return Optional.ofNullable(jpaRepo.findByUsername(username))
+                .map(this::toDomain);
     }
 
     @Override
@@ -43,52 +34,63 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Optional<User> findByUsername(String username) {
-        UserEntity entity = jpaRepo.findByUsername(username);
-        return entity == null ? Optional.empty() : Optional.of(toDomain(entity));
+    public Page<User> findAll(Pageable pageable) {
+        // 调用 Spring Data JPA 的分页查询
+        Page<UserEntity> pageEnt = jpaRepo.findAll(pageable);
+        // 将 UserEntity 映射为领域对象 User，并保持分页信息
+        return pageEnt.map(this::toDomain);
+    }
+
+    @Override
+    public User save(User user) {
+        UserEntity entity = toEntity(user);
+        UserEntity saved = jpaRepo.save(entity);
+        return toDomain(saved);
+    }
+
+    // ... 省略其它方法 ...
+
+    /**
+     * 将领域对象转换为 JPA 实体
+     */
+    private UserEntity toEntity(User u) {
+        UserEntity e = new UserEntity();
+        e.setId(u.getId());
+        e.setUsername(u.getUsername());
+        e.setPasswordHash(u.getPasswordHash());
+        e.setEmail(u.getEmail());
+        e.setRole(u.getRole());
+        e.setAvatarUrl(u.getAvatarUrl());
+        e.setCreateTime(u.getCreateTime());
+        e.setUpdateTime(u.getUpdateTime());
+        return e;
     }
 
     /**
-     * 把 UserEntity 转换成领域对象 User
+     * 将 JPA 实体转换为领域对象
      */
-    private User toDomain(UserEntity entity) {
-        User u = new User();
+    private User toDomain(UserEntity e) {
         try {
-            java.lang.reflect.Field idField = User.class.getDeclaredField("id");
-            idField.setAccessible(true);
-            idField.set(u, entity.getId());
-
-            java.lang.reflect.Field usernameField = User.class.getDeclaredField("username");
-            usernameField.setAccessible(true);
-            usernameField.set(u, entity.getUsername());
-
-            java.lang.reflect.Field passwordField = User.class.getDeclaredField("passwordHash");
-            passwordField.setAccessible(true);
-            passwordField.set(u, entity.getPasswordHash());
-
-            java.lang.reflect.Field emailField = User.class.getDeclaredField("email");
-            emailField.setAccessible(true);
-            emailField.set(u, entity.getEmail());
-
-            java.lang.reflect.Field roleField = User.class.getDeclaredField("role");
-            roleField.setAccessible(true);
-            roleField.set(u, entity.getRole());
-
-            java.lang.reflect.Field avatarField = User.class.getDeclaredField("avatarUrl");
-            avatarField.setAccessible(true);
-            avatarField.set(u, entity.getAvatarUrl());
-
-            java.lang.reflect.Field createField = User.class.getDeclaredField("createTime");
-            createField.setAccessible(true);
-            createField.set(u, entity.getCreateTime());
-
-            java.lang.reflect.Field updateField = User.class.getDeclaredField("updateTime");
-            updateField.setAccessible(true);
-            updateField.set(u, entity.getUpdateTime());
-        } catch (Exception e) {
-            throw new RuntimeException("UserEntity → User 转换失败", e);
+            User u = User.class.getDeclaredConstructor().newInstance();
+            var rf = User.class.getDeclaredField("id");
+            rf.setAccessible(true); rf.set(u, e.getId());
+            rf = User.class.getDeclaredField("username");
+            rf.setAccessible(true); rf.set(u, e.getUsername());
+            rf = User.class.getDeclaredField("passwordHash");
+            rf.setAccessible(true); rf.set(u, e.getPasswordHash());
+            rf = User.class.getDeclaredField("email");
+            rf.setAccessible(true); rf.set(u, e.getEmail());
+            rf = User.class.getDeclaredField("role");
+            rf.setAccessible(true); rf.set(u, e.getRole());
+            rf = User.class.getDeclaredField("avatarUrl");
+            rf.setAccessible(true); rf.set(u, e.getAvatarUrl());
+            rf = User.class.getDeclaredField("createTime");
+            rf.setAccessible(true); rf.set(u, e.getCreateTime());
+            rf = User.class.getDeclaredField("updateTime");
+            rf.setAccessible(true); rf.set(u, e.getUpdateTime());
+            return u;
+        } catch (ReflectiveOperationException ex) {
+            throw new RuntimeException("UserEntity → User 转换失败", ex);
         }
-        return u;
     }
 }
-

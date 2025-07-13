@@ -1,14 +1,22 @@
 package com.heiyuk6.bilihub.application.user.service;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.baidu.fsg.uid.UidGenerator;
 import com.heiyuk6.bilihub.application.user.assembler.UserAssembler;
 import com.heiyuk6.bilihub.application.user.dto.*;
+import com.heiyuk6.bilihub.common.result.PageResult;
 import com.heiyuk6.bilihub.domain.user.exception.UserDomainException;
 import com.heiyuk6.bilihub.domain.user.entity.User;
 import com.heiyuk6.bilihub.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.var;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -72,11 +80,72 @@ public class UserAppService {
     }
 
     /**
-     * 根据 ID 获取用户信息
+     * 查询当前登录用户信息
      */
-    public UserResponseDTO getUserById(Long id) {
-        User user = userRepository.findById(id)
+    public UserResponseDTO getCurrentUser() {
+        Long userId = StpUtil.getLoginIdAsLong();
+        User domain = userRepository.findById(userId)
                 .orElseThrow(() -> new UserDomainException("用户不存在"));
-        return userAssembler.toResponseDTO(user);
+        return userAssembler.toResponseDTO(domain);
     }
+
+
+    @Transactional
+    public UserResponseDTO updateProfile(UserUpdateProfileDTO dto) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        User domain = userRepository.findById(userId)
+                .orElseThrow(() -> new UserDomainException("用户不存在"));
+
+        // 先改基本信息（昵称 + 邮箱）
+        domain.changeBasicInfo(dto.getNickname(), dto.getEmail());
+        // 再改头像
+        domain.changeAvatar(dto.getAvatarUrl());
+
+        User saved = userRepository.save(domain);
+        return userAssembler.toResponseDTO(saved);
+    }
+
+
+    /**
+     * 修改当前登录用户的密码
+     */
+    @Transactional
+    public void changePassword(UserChangePasswordDTO dto) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        User domain = userRepository.findById(userId)
+                .orElseThrow(() -> new UserDomainException("用户不存在"));
+
+        // 先校验旧密码
+        if (!passwordEncoder.matches(dto.getOldPassword(), domain.getPasswordHash())) {
+            throw new UserDomainException("旧密码不正确");
+        }
+
+        // 用领域方法更新密码
+        String newHash = passwordEncoder.encode(dto.getNewPassword());
+        domain.changePassword(newHash);
+
+        userRepository.save(domain);
+    }
+
+    /**
+     * 管理员分页查询用户列表
+     */
+    public PageResult<UserResponseDTO> listUsers(int page, int size) {
+        // Spring Data 的分页请求（page 从 0 开始，这里对外接口 page 从 1 开始）
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createTime").descending());
+        Page<User> pageDomain = userRepository.findAll(pageable);
+
+        // 转成 DTO 列表
+        var dtoList = pageDomain
+                .map(userAssembler::toResponseDTO)
+                .getContent();
+
+        return new PageResult<>(
+                dtoList,
+                pageDomain.getTotalElements(),
+                pageDomain.getNumber() + 1,
+                pageDomain.getSize()
+        );
+    }
+
 }
