@@ -2,64 +2,83 @@ package com.heiyuk6.bilihub.infrastructure.repository;
 
 import com.heiyuk6.bilihub.domain.video.entity.Video;
 import com.heiyuk6.bilihub.domain.video.repository.VideoRepository;
-import com.heiyuk6.bilihub.domain.video.exception.VideoDomainException;
-import com.heiyuk6.bilihub.infrastructure.mapper.VideoMapper;
+import com.heiyuk6.bilihub.infrastructure.po.video.VideoEntity;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-/**
- * Video 仓储实现（MyBatis）
- */
 @Repository
+@RequiredArgsConstructor
 public class VideoRepositoryImpl implements VideoRepository {
-
-    private final VideoMapper videoMapper;
-
-    public VideoRepositoryImpl(VideoMapper videoMapper) {
-        this.videoMapper = videoMapper;
-    }
+    private final VideoJpaRepository jpa;
 
     @Override
     public Video save(Video video) {
-        int rows = videoMapper.insert(video);
-        if (rows != 1 || video.getId() == null) {
-            throw new VideoDomainException("视频保存失败");
-        }
-        return video;
-    }
-
-    @Override
-    public Video update(Video video) {
-        int rows = videoMapper.update(video);
-        if (rows != 1) {
-            throw new VideoDomainException("视频更新失败，ID=" + video.getId());
-        }
-        return video;
+        VideoEntity e = toEntity(video);
+        VideoEntity saved = jpa.save(e);
+        return toDomain(saved);
     }
 
     @Override
     public void deleteById(Long id) {
-        int rows = videoMapper.deleteById(id);
-        if (rows != 1) {
-            throw new VideoDomainException("视频删除失败，ID=" + id);
-        }
+        jpa.deleteById(id);
     }
 
     @Override
     public Optional<Video> findById(Long id) {
-        Video v = videoMapper.selectById(id);
-        return Optional.ofNullable(v);
+        return jpa.findById(id).map(this::toDomain);
     }
 
     @Override
-    public List<Video> findByUploaderId(Long uploaderId) {
-        return videoMapper.selectByUploaderId(uploaderId);
+    public Page<Video> findAll(Pageable pageable) {
+        Page<VideoEntity> page = jpa.findAll(
+                PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+                        Sort.by(Sort.Direction.DESC, "createTime"))
+        );
+        return new PageImpl<>(
+                page.getContent().stream().map(this::toDomain).collect(Collectors.toList()),
+                pageable, page.getTotalElements()
+        );
     }
 
     @Override
-    public List<Video> findAllOrderByCreatedAtDesc(int offset, int limit) {
-        return videoMapper.selectAllOrderByCreatedAtDesc(offset, limit);
+    public Page<Video> findByUploaderId(Long uploaderId, Pageable pageable) {
+        Page<VideoEntity> page = jpa.findByUploaderIdOrderByCreateTimeDesc(
+                uploaderId,
+                PageRequest.of(pageable.getPageNumber(), pageable.getPageSize())
+        );
+        return new PageImpl<>(
+                page.getContent().stream().map(this::toDomain).collect(Collectors.toList()),
+                pageable, page.getTotalElements()
+        );
+    }
+
+    private VideoEntity toEntity(Video v) {
+        VideoEntity e = new VideoEntity();
+        e.setId(v.getId());
+        e.setUploaderId(v.getUploaderId());
+        e.setTitle(v.getTitle());
+        e.setDescription(v.getDescription());
+        e.setStoragePath(v.getStoragePath());
+        e.setThumbnailPath(v.getThumbnailPath());
+        e.setDuration(v.getDuration());
+        e.setSize(v.getSize());
+        e.setStatus(v.getStatus());
+        e.setViewCount(v.getViewCount());
+        e.setCreateTime(v.getCreateTime());
+        e.setUpdateTime(v.getUpdateTime());
+        return e;
+    }
+
+    private Video toDomain(VideoEntity e) {
+        Video v = Video.of(
+                e.getId(), e.getUploaderId(), e.getTitle(), e.getDescription(),
+                e.getStoragePath(), e.getThumbnailPath(), e.getDuration(), e.getSize(), e.getStatus()
+        );
+        while (v.getViewCount() < e.getViewCount()) v.incrementView();
+        return v;
     }
 }

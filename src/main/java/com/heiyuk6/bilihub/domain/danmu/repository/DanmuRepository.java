@@ -1,26 +1,33 @@
 package com.heiyuk6.bilihub.domain.danmu.repository;
 
 import com.heiyuk6.bilihub.domain.danmu.entity.Danmu;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 /**
- * 弹幕仓储接口
+ * 弹幕仓储接口，支持分页或全部查询
  */
 public interface DanmuRepository {
 
     /**
-     * 保存新弹幕，保存后 danmu.id 会被回填
+     * 保存新弹幕
      */
     Danmu save(Danmu danmu);
 
     /**
-     * 根据视频 ID 查询该视频所有弹幕（按 created_at 升序）
-     */
-    List<Danmu> findByVideoIdOrderByCreatedAtAsc(Long videoId);
-
-    /**
-     * 删除弹幕（按 ID）
+     * 删除弹幕
      */
     void deleteById(Long id);
+
+    /**
+     * 分页查询某视频的弹幕，按创建时间升序
+     */
+    Page<Danmu> findByVideoId(Long videoId, Pageable pageable);
+
+    /**
+     * 查询某视频的所有弹幕，按创建时间升序
+     */
+    List<Danmu> findAllByVideoId(Long videoId);
 }

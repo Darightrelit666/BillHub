@@ -1,143 +1,139 @@
 package com.heiyuk6.bilihub.application.video.service;
 
-import com.baidu.fsg.uid.UidGenerator;
-import com.heiyuk6.bilihub.application.video.assembler.VideoAssembler;
-import com.heiyuk6.bilihub.application.video.dto.VideoResponseDTO;
+import com.heiyuk6.bilihub.application.video.dto.VideoInfoDTO;
 import com.heiyuk6.bilihub.application.video.dto.VideoUploadDTO;
-import com.heiyuk6.bilihub.domain.video.exception.VideoDomainException;
 import com.heiyuk6.bilihub.domain.video.entity.Video;
 import com.heiyuk6.bilihub.domain.video.repository.VideoRepository;
+import com.baidu.fsg.uid.UidGenerator;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
-/**
- * 视频应用服务
- */
 @Service
+@RequiredArgsConstructor
 public class VideoAppService {
 
-    private final VideoRepository videoRepository;
-    private final UidGenerator uidGenerator;
-
-    public VideoAppService(UidGenerator uidGenerator,VideoRepository videoRepository) {
-        this.uidGenerator= uidGenerator;
-        this.videoRepository = videoRepository;
-    }
+    private final VideoRepository videoRepo;
+    private final UidGenerator uidGen;
 
     /**
-     * 上传视频
+     * 上传新视频
      */
-    public VideoResponseDTO uploadVideo(VideoUploadDTO dto) {
-        // 1. 先从 UidGenerator 拿到一个全局唯一的 long
-        Long newId = uidGenerator.getUID();
-
-        // 2. 用 newId + 其它上传信息创建领域模型，注意这里手动给 id 赋值
-        Video video = Video.newInstance(
+    public VideoInfoDTO upload(VideoUploadDTO dto) throws Exception {
+        // 1. 保存文件到存储（本地/MinIO 等），返回路径
+        MultipartFile file = dto.getFile();
+        String storagePath = /* your storage logic here */ "/videos/" + file.getOriginalFilename();
+        file.transferTo(new java.io.File("/data" + storagePath));
+        // 2. 生成缩略图、转码、计算时长、大小……
+        String thumbnail = "/thumbnails/" + file.getOriginalFilename() + ".jpg";
+        int duration = 0; long size = file.getSize(); // stub
+        // 3. 构造领域对象
+        long id = uidGen.getUID();
+        Video v = Video.of(
+                id,
                 dto.getUploaderId(),
                 dto.getTitle(),
                 dto.getDescription(),
-                dto.getStoragePath(),
-                dto.getThumbnailPath(),
-                dto.getDuration(),
-                dto.getSize()
+                storagePath,
+                thumbnail,
+                duration,
+                size,
+                "READY"
         );
-        video.setId(newId);   // 注意：你的领域类里有 setId(Long id) 方法
-
-        // 3. 把领域模型转换成持久化实体（VideoEntity），再保存
-        Video entity = new Video(
-                video.getId(),
-                video.getUploaderId(),
-                video.getTitle(),
-                video.getDescription(),
-                video.getStoragePath(),
-                video.getThumbnailPath(),
-                video.getDuration(),
-                video.getSize(),
-                video.getStatus(),
-                video.getViewCount(),
-                video.getCreatedAt(),
-                video.getUpdatedAt()
-        );
-        Video saved = videoRepository.save(entity);
-
-        // 4. 把持久化后（或者直接用领域模型）映射为 ResponseDTO 并返回
-        return VideoAssembler.toResponseDTO(saved);
+        v.setCreateTime(LocalDateTime.now());
+        v.setUpdateTime(LocalDateTime.now());
+        // 4. 持久化
+        Video saved = videoRepo.save(v);
+        // 5. 返回 DTO
+        VideoInfoDTO out = new VideoInfoDTO();
+        out.setId(saved.getId());
+        out.setUploaderId(saved.getUploaderId());
+        out.setTitle(saved.getTitle());
+        out.setDescription(saved.getDescription());
+        out.setStoragePath(saved.getStoragePath());
+        out.setThumbnailPath(saved.getThumbnailPath());
+        out.setDuration(saved.getDuration());
+        out.setSize(saved.getSize());
+        out.setStatus(saved.getStatus());
+        out.setViewCount(saved.getViewCount());
+        out.setCreateTime(saved.getCreateTime());
+        out.setUpdateTime(saved.getUpdateTime());
+        return out;
     }
 
-    /**
-     * 更新视频信息（除 id, uploaderId, createdAt 外）
-     */
-    public VideoResponseDTO updateVideo(Long id,
-                                        String title,
-                                        String description,
-                                        String thumbnailPath,
-                                        Integer duration,
-                                        Long size) {
-        Video existing = videoRepository.findById(id)
-                .orElseThrow(() -> new VideoDomainException("视频不存在，ID=" + id));
-        existing.updateInfo(title, description, thumbnailPath, duration, size);
-        Video updated = videoRepository.update(existing);
-        return VideoAssembler.toResponseDTO(updated);
+    /** 删除视频 */
+    public void delete(Long videoId) {
+        videoRepo.deleteById(videoId);
     }
 
-    /**
-     * 更新视频状态
-     */
-    public void updateStatus(Long id, String newStatus) {
-        Video existing = videoRepository.findById(id)
-                .orElseThrow(() -> new VideoDomainException("视频不存在，ID=" + id));
-        existing.updateStatus(newStatus);
-        videoRepository.update(existing);
+    /** 查询单个视频 */
+    public VideoInfoDTO getById(Long videoId) {
+        Video v = videoRepo.findById(videoId)
+                .orElseThrow(() -> new IllegalArgumentException("视频不存在"));
+        VideoInfoDTO d = new VideoInfoDTO();
+        d.setId(v.getId());
+        d.setUploaderId(v.getUploaderId());
+        d.setTitle(v.getTitle());
+        d.setDescription(v.getDescription());
+        d.setStoragePath(v.getStoragePath());
+        d.setThumbnailPath(v.getThumbnailPath());
+        d.setDuration(v.getDuration());
+        d.setSize(v.getSize());
+        d.setStatus(v.getStatus());
+        d.setViewCount(v.getViewCount());
+        d.setCreateTime(v.getCreateTime());
+        d.setUpdateTime(v.getUpdateTime());
+        return d;
     }
 
-    /**
-     * 删除视频
-     */
-    public void deleteVideo(Long id) {
-        if (!videoRepository.findById(id).isPresent()) {
-            throw new VideoDomainException("视频不存在，ID=" + id);
-        }
-        videoRepository.deleteById(id);
+    /** 分页列出所有视频 */
+    public Page<VideoInfoDTO> list(int page, int size) {
+        Pageable pg = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createTime"));
+        return videoRepo.findAll(pg)
+                .map(v -> {
+                    VideoInfoDTO d = new VideoInfoDTO();
+                    d.setId(v.getId());
+                    d.setUploaderId(v.getUploaderId());
+                    d.setTitle(v.getTitle());
+                    d.setDescription(v.getDescription());
+                    d.setStoragePath(v.getStoragePath());
+                    d.setThumbnailPath(v.getThumbnailPath());
+                    d.setDuration(v.getDuration());
+                    d.setSize(v.getSize());
+                    d.setStatus(v.getStatus());
+                    d.setViewCount(v.getViewCount());
+                    d.setCreateTime(v.getCreateTime());
+                    d.setUpdateTime(v.getUpdateTime());
+                    return d;
+                });
     }
 
-    /**
-     * 根据 ID 查询视频
-     */
-    public VideoResponseDTO getVideoById(Long id) {
-        Video video = videoRepository.findById(id)
-                .orElseThrow(() -> new VideoDomainException("视频不存在，ID=" + id));
-        return VideoAssembler.toResponseDTO(video);
-    }
-
-    /**
-     * 根据上传者 ID 查询该用户所有视频
-     */
-    public List<VideoResponseDTO> listByUploader(Long uploaderId) {
-        List<Video> list = videoRepository.findByUploaderId(uploaderId);
-        return list.stream()
-                .map(VideoAssembler::toResponseDTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * 分页查询所有视频
-     */
-    public List<VideoResponseDTO> listAll(int offset, int limit) {
-        List<Video> list = videoRepository.findAllOrderByCreatedAtDesc(offset, limit);
-        return list.stream()
-                .map(VideoAssembler::toResponseDTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * 增加视频播放量
-     */
-    public void incrementViewCount(Long id) {
-        Video existing = videoRepository.findById(id)
-                .orElseThrow(() -> new VideoDomainException("视频不存在，ID=" + id));
-        existing.incrementViewCount();
-        videoRepository.update(existing);
+    /** 分页列出某上传者视频 */
+    public Page<VideoInfoDTO> listByUploader(Long uploaderId, int page, int size) {
+        Pageable pg = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createTime"));
+        return videoRepo.findByUploaderId(uploaderId, pg)
+                .map(v -> {
+                    VideoInfoDTO d = new VideoInfoDTO();
+                    d.setId(v.getId());
+                    d.setUploaderId(v.getUploaderId());
+                    d.setTitle(v.getTitle());
+                    d.setDescription(v.getDescription());
+                    d.setStoragePath(v.getStoragePath());
+                    d.setThumbnailPath(v.getThumbnailPath());
+                    d.setDuration(v.getDuration());
+                    d.setSize(v.getSize());
+                    d.setStatus(v.getStatus());
+                    d.setViewCount(v.getViewCount());
+                    d.setCreateTime(v.getCreateTime());
+                    d.setUpdateTime(v.getUpdateTime());
+                    return d;
+                });
     }
 }

@@ -1,27 +1,25 @@
 package com.heiyuk6.bilihub.domain.video.repository;
 
 import com.heiyuk6.bilihub.domain.video.entity.Video;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
- * 视频仓储接口
+ * 视频仓储接口，支持分页查询
  */
 public interface VideoRepository {
 
     /**
-     * 保存新视频，保存后 video.id 会被回填
+     * 保存新视频或更新已有视频
+     * @param video 领域对象
+     * @return 保存后的领域对象（包含回填 ID 等）
      */
     Video save(Video video);
 
     /**
-     * 更新已存在的视频信息
-     */
-    Video update(Video video);
-
-    /**
-     * 删除视频（按 ID）
+     * 根据 ID 删除视频
      */
     void deleteById(Long id);
 
@@ -31,12 +29,12 @@ public interface VideoRepository {
     Optional<Video> findById(Long id);
 
     /**
-     * 根据上传者 ID 查询该用户所有视频（不分页）
+     * 分页查询所有视频，按创建时间降序
      */
-    List<Video> findByUploaderId(Long uploaderId);
+    Page<Video> findAll(Pageable pageable);
 
     /**
-     * 分页查询所有视频，按 created_at 降序
+     * 分页查询某上传者的视频，按创建时间降序
      */
-    List<Video> findAllOrderByCreatedAtDesc(int offset, int limit);
+    Page<Video> findByUploaderId(Long uploaderId, Pageable pageable);
 }
